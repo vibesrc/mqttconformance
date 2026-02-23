@@ -86,6 +86,9 @@ fn test_ping_with_client(ctx: TestContext) -> Pin<Box<dyn Future<Output = Result
             ctx.port,
         );
         opts.set_keep_alive(Duration::from_secs(5)); // Short keep alive to trigger ping
+        if let Some(ref username) = ctx.username {
+            opts.set_credentials(username, ctx.password.as_deref().unwrap_or(""));
+        }
         opts.set_clean_session(true);
 
         let (client, mut eventloop) = AsyncClient::new(opts, 10);

@@ -89,6 +89,9 @@ fn test_mqtt_3_14_4_2(ctx: TestContext) -> Pin<Box<dyn Future<Output = Result<()
             ctx.port,
         );
         sub_opts.set_keep_alive(Duration::from_secs(30));
+        if let Some(ref username) = ctx.username {
+            sub_opts.set_credentials(username, ctx.password.as_deref().unwrap_or(""));
+        }
         sub_opts.set_clean_session(true);
 
         let (sub_client, mut sub_eventloop) = AsyncClient::new(sub_opts, 10);
@@ -122,6 +125,9 @@ fn test_mqtt_3_14_4_2(ctx: TestContext) -> Pin<Box<dyn Future<Output = Result<()
                 ctx.port,
             );
             will_opts.set_keep_alive(Duration::from_secs(30));
+        if let Some(ref username) = ctx.username {
+            will_opts.set_credentials(username, ctx.password.as_deref().unwrap_or(""));
+        }
             will_opts.set_clean_session(true);
             will_opts.set_last_will(rumqttc::LastWill::new(
                 &will_topic,

@@ -65,7 +65,7 @@ fn test_mqtt_4_6_0_1(ctx: TestContext) -> Pin<Box<dyn Future<Output = Result<(),
             .map_err(|e| ConformanceError::Connection(e.to_string()))?;
 
         let client_id = format!("test4601v5{}", &uuid::Uuid::new_v4().to_string()[..8]);
-        let connect_packet = build_connect_packet_v5(&client_id, 30);
+        let connect_packet = build_connect_packet_v5(&client_id, 30, ctx.username.as_deref(), ctx.password.as_deref());
         stream.write_all(&connect_packet).await
             .map_err(ConformanceError::Io)?;
 
@@ -131,7 +131,7 @@ fn test_mqtt_4_6_0_2(ctx: TestContext) -> Pin<Box<dyn Future<Output = Result<(),
             .map_err(|e| ConformanceError::Connection(e.to_string()))?;
 
         let client_id = format!("test4602v5{}", &uuid::Uuid::new_v4().to_string()[..8]);
-        let connect_packet = build_connect_packet_v5(&client_id, 30);
+        let connect_packet = build_connect_packet_v5(&client_id, 30, ctx.username.as_deref(), ctx.password.as_deref());
         stream.write_all(&connect_packet).await
             .map_err(ConformanceError::Io)?;
 
@@ -199,7 +199,7 @@ fn test_mqtt_2_2_1_2(ctx: TestContext) -> Pin<Box<dyn Future<Output = Result<(),
             .map_err(|e| ConformanceError::Connection(e.to_string()))?;
 
         let client_id = format!("test2212v5{}", &uuid::Uuid::new_v4().to_string()[..8]);
-        let connect_packet = build_connect_packet_v5(&client_id, 30);
+        let connect_packet = build_connect_packet_v5(&client_id, 30, ctx.username.as_deref(), ctx.password.as_deref());
         stream.write_all(&connect_packet).await
             .map_err(ConformanceError::Io)?;
 
@@ -236,7 +236,7 @@ fn test_mqtt_2_2_1_5(ctx: TestContext) -> Pin<Box<dyn Future<Output = Result<(),
             .map_err(|e| ConformanceError::Connection(e.to_string()))?;
 
         let client_id = format!("test2215v5{}", &uuid::Uuid::new_v4().to_string()[..8]);
-        let connect_packet = build_connect_packet_v5(&client_id, 30);
+        let connect_packet = build_connect_packet_v5(&client_id, 30, ctx.username.as_deref(), ctx.password.as_deref());
         stream.write_all(&connect_packet).await
             .map_err(ConformanceError::Io)?;
 
@@ -282,7 +282,7 @@ fn test_mqtt_3_3_4_7(ctx: TestContext) -> Pin<Box<dyn Future<Output = Result<(),
             .map_err(|e| ConformanceError::Connection(e.to_string()))?;
 
         let client_id = format!("test3347v5{}", &uuid::Uuid::new_v4().to_string()[..8]);
-        let connect_packet = build_connect_packet_v5_with_receive_max(&client_id, 30, 2); // Receive Maximum = 2
+        let connect_packet = build_connect_packet_v5_with_receive_max(&client_id, 30, 2, ctx.username.as_deref(), ctx.password.as_deref()); // Receive Maximum = 2
         stream.write_all(&connect_packet).await
             .map_err(ConformanceError::Io)?;
 
@@ -301,21 +301,46 @@ fn test_mqtt_3_3_4_7(ctx: TestContext) -> Pin<Box<dyn Future<Output = Result<(),
     })
 }
 
-fn build_connect_packet_v5(client_id: &str, keep_alive: u16) -> Vec<u8> {
+fn build_connect_packet_v5(client_id: &str, keep_alive: u16, username: Option<&str>, password: Option<&str>) -> Vec<u8> {
     let client_id_bytes = client_id.as_bytes();
+
+    // Calculate connect flags
+    let mut flags = 0x02; // Clean Start
+    if username.is_some() {
+        flags |= 0x80; // Set username flag (bit 7)
+    }
+    if password.is_some() {
+        flags |= 0x40; // Set password flag (bit 6)
+    }
 
     let mut var_header_payload = Vec::new();
     var_header_payload.push(0x00);
     var_header_payload.push(0x04);
     var_header_payload.extend_from_slice(b"MQTT");
     var_header_payload.push(5);
-    var_header_payload.push(0x02);
+    var_header_payload.push(flags);
     var_header_payload.push((keep_alive >> 8) as u8);
     var_header_payload.push((keep_alive & 0xFF) as u8);
     var_header_payload.push(0x00);
     var_header_payload.push((client_id_bytes.len() >> 8) as u8);
     var_header_payload.push((client_id_bytes.len() & 0xFF) as u8);
     var_header_payload.extend_from_slice(client_id_bytes);
+
+    // Add username if present
+    if let Some(user) = username {
+        let user_bytes = user.as_bytes();
+        var_header_payload.push((user_bytes.len() >> 8) as u8);
+        var_header_payload.push((user_bytes.len() & 0xFF) as u8);
+        var_header_payload.extend_from_slice(user_bytes);
+    }
+
+    // Add password if present
+    if let Some(pass) = password {
+        let pass_bytes = pass.as_bytes();
+        var_header_payload.push((pass_bytes.len() >> 8) as u8);
+        var_header_payload.push((pass_bytes.len() & 0xFF) as u8);
+        var_header_payload.extend_from_slice(pass_bytes);
+    }
 
     let mut packet = Vec::new();
     packet.push(0x10);
@@ -325,15 +350,24 @@ fn build_connect_packet_v5(client_id: &str, keep_alive: u16) -> Vec<u8> {
     packet
 }
 
-fn build_connect_packet_v5_with_receive_max(client_id: &str, keep_alive: u16, receive_max: u16) -> Vec<u8> {
+fn build_connect_packet_v5_with_receive_max(client_id: &str, keep_alive: u16, receive_max: u16, username: Option<&str>, password: Option<&str>) -> Vec<u8> {
     let client_id_bytes = client_id.as_bytes();
+
+    // Calculate connect flags
+    let mut flags = 0x02; // Clean Start
+    if username.is_some() {
+        flags |= 0x80; // Set username flag (bit 7)
+    }
+    if password.is_some() {
+        flags |= 0x40; // Set password flag (bit 6)
+    }
 
     let mut var_header_payload = Vec::new();
     var_header_payload.push(0x00);
     var_header_payload.push(0x04);
     var_header_payload.extend_from_slice(b"MQTT");
     var_header_payload.push(5);
-    var_header_payload.push(0x02);
+    var_header_payload.push(flags);
     var_header_payload.push((keep_alive >> 8) as u8);
     var_header_payload.push((keep_alive & 0xFF) as u8);
 
@@ -346,6 +380,22 @@ fn build_connect_packet_v5_with_receive_max(client_id: &str, keep_alive: u16, re
     var_header_payload.push((client_id_bytes.len() >> 8) as u8);
     var_header_payload.push((client_id_bytes.len() & 0xFF) as u8);
     var_header_payload.extend_from_slice(client_id_bytes);
+
+    // Add username if present
+    if let Some(user) = username {
+        let user_bytes = user.as_bytes();
+        var_header_payload.push((user_bytes.len() >> 8) as u8);
+        var_header_payload.push((user_bytes.len() & 0xFF) as u8);
+        var_header_payload.extend_from_slice(user_bytes);
+    }
+
+    // Add password if present
+    if let Some(pass) = password {
+        let pass_bytes = pass.as_bytes();
+        var_header_payload.push((pass_bytes.len() >> 8) as u8);
+        var_header_payload.push((pass_bytes.len() & 0xFF) as u8);
+        var_header_payload.extend_from_slice(pass_bytes);
+    }
 
     let mut packet = Vec::new();
     packet.push(0x10);

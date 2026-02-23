@@ -125,7 +125,7 @@ fn test_mqtt_3_3_1_1(ctx: TestContext) -> Pin<Box<dyn Future<Output = Result<(),
             .map_err(|e| ConformanceError::Connection(e.to_string()))?;
 
         let client_id = format!("test3311v5{}", &uuid::Uuid::new_v4().to_string()[..8]);
-        let connect_packet = build_connect_packet_v5(&client_id, 30);
+        let connect_packet = build_connect_packet_v5(&client_id, 30, ctx.username.as_deref(), ctx.password.as_deref());
         stream.write_all(&connect_packet).await
             .map_err(ConformanceError::Io)?;
 
@@ -165,7 +165,7 @@ fn test_mqtt_3_3_1_2(ctx: TestContext) -> Pin<Box<dyn Future<Output = Result<(),
 
         let client_id = format!("test3312v5{}", &uuid::Uuid::new_v4().to_string()[..8]);
         let topic = format!("test/qos0/v5/{}", uuid::Uuid::new_v4());
-        let connect_packet = build_connect_packet_v5(&client_id, 30);
+        let connect_packet = build_connect_packet_v5(&client_id, 30, ctx.username.as_deref(), ctx.password.as_deref());
         stream.write_all(&connect_packet).await
             .map_err(ConformanceError::Io)?;
 
@@ -232,7 +232,7 @@ fn test_mqtt_3_3_1_3(ctx: TestContext) -> Pin<Box<dyn Future<Output = Result<(),
             .map_err(|e| ConformanceError::Connection(e.to_string()))?;
 
         let sub_id = format!("sub3313v5{}", &uuid::Uuid::new_v4().to_string()[..8]);
-        let connect = build_connect_packet_v5(&sub_id, 30);
+        let connect = build_connect_packet_v5(&sub_id, 30, ctx.username.as_deref(), ctx.password.as_deref());
         sub_stream.write_all(&connect).await
             .map_err(ConformanceError::Io)?;
 
@@ -253,7 +253,7 @@ fn test_mqtt_3_3_1_3(ctx: TestContext) -> Pin<Box<dyn Future<Output = Result<(),
             .map_err(|e| ConformanceError::Connection(e.to_string()))?;
 
         let pub_id = format!("pub3313v5{}", &uuid::Uuid::new_v4().to_string()[..8]);
-        let connect = build_connect_packet_v5(&pub_id, 30);
+        let connect = build_connect_packet_v5(&pub_id, 30, ctx.username.as_deref(), ctx.password.as_deref());
         pub_stream.write_all(&connect).await
             .map_err(ConformanceError::Io)?;
         tokio::time::timeout(ctx.timeout, pub_stream.read(&mut buf)).await.ok();
@@ -302,7 +302,7 @@ fn test_mqtt_3_3_1_4(ctx: TestContext) -> Pin<Box<dyn Future<Output = Result<(),
             .map_err(|e| ConformanceError::Connection(e.to_string()))?;
 
         let client_id = format!("test3314v5{}", &uuid::Uuid::new_v4().to_string()[..8]);
-        let connect_packet = build_connect_packet_v5(&client_id, 30);
+        let connect_packet = build_connect_packet_v5(&client_id, 30, ctx.username.as_deref(), ctx.password.as_deref());
         stream.write_all(&connect_packet).await
             .map_err(ConformanceError::Io)?;
 
@@ -364,7 +364,7 @@ fn test_mqtt_3_3_2_2(ctx: TestContext) -> Pin<Box<dyn Future<Output = Result<(),
             .map_err(|e| ConformanceError::Connection(e.to_string()))?;
 
         let client_id = format!("test3322v5{}", &uuid::Uuid::new_v4().to_string()[..8]);
-        let connect_packet = build_connect_packet_v5(&client_id, 30);
+        let connect_packet = build_connect_packet_v5(&client_id, 30, ctx.username.as_deref(), ctx.password.as_deref());
         stream.write_all(&connect_packet).await
             .map_err(ConformanceError::Io)?;
 
@@ -406,7 +406,7 @@ fn test_mqtt_3_3_1_5(ctx: TestContext) -> Pin<Box<dyn Future<Output = Result<(),
             .map_err(|e| ConformanceError::Connection(e.to_string()))?;
 
         let pub_id = format!("pub3315v5{}", &uuid::Uuid::new_v4().to_string()[..8]);
-        let connect = build_connect_packet_v5(&pub_id, 30);
+        let connect = build_connect_packet_v5(&pub_id, 30, ctx.username.as_deref(), ctx.password.as_deref());
         pub_stream.write_all(&connect).await
             .map_err(ConformanceError::Io)?;
 
@@ -433,7 +433,7 @@ fn test_mqtt_3_3_1_5(ctx: TestContext) -> Pin<Box<dyn Future<Output = Result<(),
             .map_err(|e| ConformanceError::Connection(e.to_string()))?;
 
         let sub_id = format!("sub3315v5{}", &uuid::Uuid::new_v4().to_string()[..8]);
-        let connect = build_connect_packet_v5(&sub_id, 30);
+        let connect = build_connect_packet_v5(&sub_id, 30, ctx.username.as_deref(), ctx.password.as_deref());
         sub_stream.write_all(&connect).await
             .map_err(ConformanceError::Io)?;
         tokio::time::timeout(ctx.timeout, sub_stream.read(&mut buf)).await.ok();
@@ -495,7 +495,7 @@ fn test_mqtt_3_3_1_6(ctx: TestContext) -> Pin<Box<dyn Future<Output = Result<(),
             .map_err(|e| ConformanceError::Connection(e.to_string()))?;
 
         let pub_id = format!("pub3316v5{}", &uuid::Uuid::new_v4().to_string()[..8]);
-        let connect = build_connect_packet_v5(&pub_id, 30);
+        let connect = build_connect_packet_v5(&pub_id, 30, ctx.username.as_deref(), ctx.password.as_deref());
         pub_stream.write_all(&connect).await
             .map_err(ConformanceError::Io)?;
 
@@ -522,7 +522,7 @@ fn test_mqtt_3_3_1_6(ctx: TestContext) -> Pin<Box<dyn Future<Output = Result<(),
             .map_err(|e| ConformanceError::Connection(e.to_string()))?;
 
         let sub_id = format!("sub3316v5{}", &uuid::Uuid::new_v4().to_string()[..8]);
-        let connect = build_connect_packet_v5(&sub_id, 30);
+        let connect = build_connect_packet_v5(&sub_id, 30, ctx.username.as_deref(), ctx.password.as_deref());
         sub_stream.write_all(&connect).await
             .map_err(ConformanceError::Io)?;
         tokio::time::timeout(ctx.timeout, sub_stream.read(&mut buf)).await.ok();
@@ -566,7 +566,7 @@ fn test_mqtt_3_3_1_7(ctx: TestContext) -> Pin<Box<dyn Future<Output = Result<(),
             .map_err(|e| ConformanceError::Connection(e.to_string()))?;
 
         let pub_id = format!("pub3317v5{}", &uuid::Uuid::new_v4().to_string()[..8]);
-        let connect = build_connect_packet_v5(&pub_id, 30);
+        let connect = build_connect_packet_v5(&pub_id, 30, ctx.username.as_deref(), ctx.password.as_deref());
         pub_stream.write_all(&connect).await
             .map_err(ConformanceError::Io)?;
 
@@ -594,7 +594,7 @@ fn test_mqtt_3_3_1_7(ctx: TestContext) -> Pin<Box<dyn Future<Output = Result<(),
             .map_err(|e| ConformanceError::Connection(e.to_string()))?;
 
         let sub_id = format!("sub3317v5{}", &uuid::Uuid::new_v4().to_string()[..8]);
-        let connect = build_connect_packet_v5(&sub_id, 30);
+        let connect = build_connect_packet_v5(&sub_id, 30, ctx.username.as_deref(), ctx.password.as_deref());
         sub_stream.write_all(&connect).await
             .map_err(ConformanceError::Io)?;
         tokio::time::timeout(ctx.timeout, sub_stream.read(&mut buf)).await.ok();
@@ -655,7 +655,7 @@ fn test_mqtt_3_3_1_8(ctx: TestContext) -> Pin<Box<dyn Future<Output = Result<(),
             .map_err(|e| ConformanceError::Connection(e.to_string()))?;
 
         let pub_id = format!("pub3318v5{}", &uuid::Uuid::new_v4().to_string()[..8]);
-        let connect = build_connect_packet_v5(&pub_id, 30);
+        let connect = build_connect_packet_v5(&pub_id, 30, ctx.username.as_deref(), ctx.password.as_deref());
         pub_stream.write_all(&connect).await
             .map_err(ConformanceError::Io)?;
 
@@ -676,7 +676,7 @@ fn test_mqtt_3_3_1_8(ctx: TestContext) -> Pin<Box<dyn Future<Output = Result<(),
             .map_err(|e| ConformanceError::Connection(e.to_string()))?;
 
         let sub_id = format!("sub3318v5{}", &uuid::Uuid::new_v4().to_string()[..8]);
-        let connect = build_connect_packet_v5(&sub_id, 30);
+        let connect = build_connect_packet_v5(&sub_id, 30, ctx.username.as_deref(), ctx.password.as_deref());
         sub_stream.write_all(&connect).await
             .map_err(ConformanceError::Io)?;
         tokio::time::timeout(ctx.timeout, sub_stream.read(&mut buf)).await.ok();
@@ -733,7 +733,7 @@ fn test_mqtt_3_3_1_9(ctx: TestContext) -> Pin<Box<dyn Future<Output = Result<(),
             .map_err(|e| ConformanceError::Connection(e.to_string()))?;
 
         let sub_id = format!("sub3319v5{}", &uuid::Uuid::new_v4().to_string()[..8]);
-        let connect = build_connect_packet_v5(&sub_id, 30);
+        let connect = build_connect_packet_v5(&sub_id, 30, ctx.username.as_deref(), ctx.password.as_deref());
         sub_stream.write_all(&connect).await
             .map_err(ConformanceError::Io)?;
 
@@ -753,7 +753,7 @@ fn test_mqtt_3_3_1_9(ctx: TestContext) -> Pin<Box<dyn Future<Output = Result<(),
             .map_err(|e| ConformanceError::Connection(e.to_string()))?;
 
         let pub_id = format!("pub3319v5{}", &uuid::Uuid::new_v4().to_string()[..8]);
-        let connect = build_connect_packet_v5(&pub_id, 30);
+        let connect = build_connect_packet_v5(&pub_id, 30, ctx.username.as_deref(), ctx.password.as_deref());
         pub_stream.write_all(&connect).await
             .map_err(ConformanceError::Io)?;
         tokio::time::timeout(ctx.timeout, pub_stream.read(&mut buf)).await.ok();
@@ -803,7 +803,7 @@ fn test_mqtt_3_3_1_10(ctx: TestContext) -> Pin<Box<dyn Future<Output = Result<()
             .map_err(|e| ConformanceError::Connection(e.to_string()))?;
 
         let pub_id = format!("pub33110v5{}", &uuid::Uuid::new_v4().to_string()[..8]);
-        let connect = build_connect_packet_v5(&pub_id, 30);
+        let connect = build_connect_packet_v5(&pub_id, 30, ctx.username.as_deref(), ctx.password.as_deref());
         pub_stream.write_all(&connect).await
             .map_err(ConformanceError::Io)?;
 
@@ -824,7 +824,7 @@ fn test_mqtt_3_3_1_10(ctx: TestContext) -> Pin<Box<dyn Future<Output = Result<()
             .map_err(|e| ConformanceError::Connection(e.to_string()))?;
 
         let sub_id = format!("sub33110v5{}", &uuid::Uuid::new_v4().to_string()[..8]);
-        let connect = build_connect_packet_v5(&sub_id, 30);
+        let connect = build_connect_packet_v5(&sub_id, 30, ctx.username.as_deref(), ctx.password.as_deref());
         sub_stream.write_all(&connect).await
             .map_err(ConformanceError::Io)?;
         tokio::time::timeout(ctx.timeout, sub_stream.read(&mut buf)).await.ok();
@@ -865,7 +865,7 @@ fn test_mqtt_3_3_2_1(ctx: TestContext) -> Pin<Box<dyn Future<Output = Result<(),
             .map_err(|e| ConformanceError::Connection(e.to_string()))?;
 
         let client_id = format!("test3321v5{}", &uuid::Uuid::new_v4().to_string()[..8]);
-        let connect = build_connect_packet_v5(&client_id, 30);
+        let connect = build_connect_packet_v5(&client_id, 30, ctx.username.as_deref(), ctx.password.as_deref());
         stream.write_all(&connect).await
             .map_err(ConformanceError::Io)?;
 
@@ -919,7 +919,7 @@ fn test_mqtt_3_3_2_3(ctx: TestContext) -> Pin<Box<dyn Future<Output = Result<(),
             .map_err(|e| ConformanceError::Connection(e.to_string()))?;
 
         let sub_id = format!("sub3323v5{}", &uuid::Uuid::new_v4().to_string()[..8]);
-        let connect = build_connect_packet_v5(&sub_id, 30);
+        let connect = build_connect_packet_v5(&sub_id, 30, ctx.username.as_deref(), ctx.password.as_deref());
         sub_stream.write_all(&connect).await
             .map_err(ConformanceError::Io)?;
 
@@ -940,7 +940,7 @@ fn test_mqtt_3_3_2_3(ctx: TestContext) -> Pin<Box<dyn Future<Output = Result<(),
             .map_err(|e| ConformanceError::Connection(e.to_string()))?;
 
         let pub_id = format!("pub3323v5{}", &uuid::Uuid::new_v4().to_string()[..8]);
-        let connect = build_connect_packet_v5(&pub_id, 30);
+        let connect = build_connect_packet_v5(&pub_id, 30, ctx.username.as_deref(), ctx.password.as_deref());
         pub_stream.write_all(&connect).await
             .map_err(ConformanceError::Io)?;
         tokio::time::timeout(ctx.timeout, pub_stream.read(&mut buf)).await.ok();
@@ -994,7 +994,7 @@ fn test_mqtt_3_3_2_4(ctx: TestContext) -> Pin<Box<dyn Future<Output = Result<(),
             .map_err(|e| ConformanceError::Connection(e.to_string()))?;
 
         let client_id = format!("test3324v5{}", &uuid::Uuid::new_v4().to_string()[..8]);
-        let connect = build_connect_packet_v5(&client_id, 30);
+        let connect = build_connect_packet_v5(&client_id, 30, ctx.username.as_deref(), ctx.password.as_deref());
         stream.write_all(&connect).await
             .map_err(ConformanceError::Io)?;
 
@@ -1066,7 +1066,7 @@ fn test_mqtt_3_3_2_5(ctx: TestContext) -> Pin<Box<dyn Future<Output = Result<(),
             .map_err(|e| ConformanceError::Connection(e.to_string()))?;
 
         let client_id = format!("test3325v5{}", &uuid::Uuid::new_v4().to_string()[..8]);
-        let connect = build_connect_packet_v5(&client_id, 30);
+        let connect = build_connect_packet_v5(&client_id, 30, ctx.username.as_deref(), ctx.password.as_deref());
         stream.write_all(&connect).await
             .map_err(ConformanceError::Io)?;
 
@@ -1127,8 +1127,17 @@ fn test_mqtt_3_3_2_5(ctx: TestContext) -> Pin<Box<dyn Future<Output = Result<(),
     })
 }
 
-fn build_connect_packet_v5(client_id: &str, keep_alive: u16) -> Vec<u8> {
+fn build_connect_packet_v5(client_id: &str, keep_alive: u16, username: Option<&str>, password: Option<&str>) -> Vec<u8> {
     let client_id_bytes = client_id.as_bytes();
+
+    // Calculate connect flags
+    let mut flags = 0x02; // Clean Start
+    if username.is_some() {
+        flags |= 0x80; // Set username flag (bit 7)
+    }
+    if password.is_some() {
+        flags |= 0x40; // Set password flag (bit 6)
+    }
 
     let mut var_header_payload = Vec::new();
 
@@ -1136,13 +1145,29 @@ fn build_connect_packet_v5(client_id: &str, keep_alive: u16) -> Vec<u8> {
     var_header_payload.push(0x04);
     var_header_payload.extend_from_slice(b"MQTT");
     var_header_payload.push(5);
-    var_header_payload.push(0x02); // Clean Start
+    var_header_payload.push(flags);
     var_header_payload.push((keep_alive >> 8) as u8);
     var_header_payload.push((keep_alive & 0xFF) as u8);
     var_header_payload.push(0x00); // Properties
     var_header_payload.push((client_id_bytes.len() >> 8) as u8);
     var_header_payload.push((client_id_bytes.len() & 0xFF) as u8);
     var_header_payload.extend_from_slice(client_id_bytes);
+
+    // Add username if present
+    if let Some(user) = username {
+        let user_bytes = user.as_bytes();
+        var_header_payload.push((user_bytes.len() >> 8) as u8);
+        var_header_payload.push((user_bytes.len() & 0xFF) as u8);
+        var_header_payload.extend_from_slice(user_bytes);
+    }
+
+    // Add password if present
+    if let Some(pass) = password {
+        let pass_bytes = pass.as_bytes();
+        var_header_payload.push((pass_bytes.len() >> 8) as u8);
+        var_header_payload.push((pass_bytes.len() & 0xFF) as u8);
+        var_header_payload.extend_from_slice(pass_bytes);
+    }
 
     let mut packet = Vec::new();
     packet.push(0x10);

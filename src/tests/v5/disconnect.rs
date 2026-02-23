@@ -40,7 +40,7 @@ fn test_mqtt_3_14_2_1(ctx: TestContext) -> Pin<Box<dyn Future<Output = Result<()
 
         // Connect with Session Expiry Interval = 0 (or not specified, which defaults to 0)
         let client_id = format!("test31421v5{}", &uuid::Uuid::new_v4().to_string()[..8]);
-        let connect_packet = build_connect_packet_v5_session_expiry(&client_id, 30, 0);
+        let connect_packet = build_connect_packet_v5_session_expiry(&client_id, 30, 0, ctx.username.as_deref(), ctx.password.as_deref());
         stream.write_all(&connect_packet).await
             .map_err(ConformanceError::Io)?;
 
@@ -73,8 +73,17 @@ fn test_mqtt_3_14_2_1(ctx: TestContext) -> Pin<Box<dyn Future<Output = Result<()
     })
 }
 
-fn build_connect_packet_v5_session_expiry(client_id: &str, keep_alive: u16, session_expiry: u32) -> Vec<u8> {
+fn build_connect_packet_v5_session_expiry(client_id: &str, keep_alive: u16, session_expiry: u32, username: Option<&str>, password: Option<&str>) -> Vec<u8> {
     let client_id_bytes = client_id.as_bytes();
+
+    // Calculate connect flags
+    let mut flags = 0x02; // Clean Start
+    if username.is_some() {
+        flags |= 0x80; // Set username flag (bit 7)
+    }
+    if password.is_some() {
+        flags |= 0x40; // Set password flag (bit 6)
+    }
 
     let mut var_header_payload = Vec::new();
 
@@ -82,7 +91,7 @@ fn build_connect_packet_v5_session_expiry(client_id: &str, keep_alive: u16, sess
     var_header_payload.push(0x04);
     var_header_payload.extend_from_slice(b"MQTT");
     var_header_payload.push(5);
-    var_header_payload.push(0x02); // Clean Start
+    var_header_payload.push(flags);
     var_header_payload.push((keep_alive >> 8) as u8);
     var_header_payload.push((keep_alive & 0xFF) as u8);
 
@@ -101,6 +110,22 @@ fn build_connect_packet_v5_session_expiry(client_id: &str, keep_alive: u16, sess
     var_header_payload.push((client_id_bytes.len() >> 8) as u8);
     var_header_payload.push((client_id_bytes.len() & 0xFF) as u8);
     var_header_payload.extend_from_slice(client_id_bytes);
+
+    // Add username if present
+    if let Some(user) = username {
+        let user_bytes = user.as_bytes();
+        var_header_payload.push((user_bytes.len() >> 8) as u8);
+        var_header_payload.push((user_bytes.len() & 0xFF) as u8);
+        var_header_payload.extend_from_slice(user_bytes);
+    }
+
+    // Add password if present
+    if let Some(pass) = password {
+        let pass_bytes = pass.as_bytes();
+        var_header_payload.push((pass_bytes.len() >> 8) as u8);
+        var_header_payload.push((pass_bytes.len() & 0xFF) as u8);
+        var_header_payload.extend_from_slice(pass_bytes);
+    }
 
     let mut packet = Vec::new();
     packet.push(0x10);

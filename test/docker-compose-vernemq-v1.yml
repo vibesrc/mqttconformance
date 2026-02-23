@@ -1,0 +1,11 @@
+services:
+  vernemq:
+    image: vernemq/vernemq:1.13.0
+    container_name: vernemq
+    ports:
+      - "1883:1883"      # MQTT
+      - "8888:8888"      # HTTP status (optional)
+    environment:
+      - DOCKER_VERNEMQ_ALLOW_ANONYMOUS=on
+      - DOCKER_VERNEMQ_ACCEPT_EULA=yes
+    restart: unless-stopped

@@ -195,6 +195,9 @@ fn test_mqtt_1_5_3_3(ctx: TestContext) -> Pin<Box<dyn Future<Output = Result<(),
             ctx.port,
         );
         opts.set_keep_alive(Duration::from_secs(30));
+        if let Some(ref username) = ctx.username {
+            opts.set_credentials(username, ctx.password.as_deref().unwrap_or(""));
+        }
         opts.set_clean_session(true);
 
         let (client, mut eventloop) = AsyncClient::new(opts, 10);

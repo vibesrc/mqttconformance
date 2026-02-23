@@ -253,7 +253,7 @@ fn test_mqtt_1_5_4_3(ctx: TestContext) -> Pin<Box<dyn Future<Output = Result<(),
             .map_err(|e| ConformanceError::Connection(e.to_string()))?;
 
         let sub_id = format!("sub154_3v5{}", &uuid::Uuid::new_v4().to_string()[..8]);
-        let connect = build_connect_packet_v5(&sub_id, 30);
+        let connect = build_connect_packet_v5(&sub_id, 30, ctx.username.as_deref(), ctx.password.as_deref());
         sub_stream.write_all(&connect).await
             .map_err(ConformanceError::Io)?;
 
@@ -278,7 +278,7 @@ fn test_mqtt_1_5_4_3(ctx: TestContext) -> Pin<Box<dyn Future<Output = Result<(),
             .map_err(|e| ConformanceError::Connection(e.to_string()))?;
 
         let pub_id = format!("pub154_3v5{}", &uuid::Uuid::new_v4().to_string()[..8]);
-        let connect = build_connect_packet_v5(&pub_id, 30);
+        let connect = build_connect_packet_v5(&pub_id, 30, ctx.username.as_deref(), ctx.password.as_deref());
         pub_stream.write_all(&connect).await
             .map_err(ConformanceError::Io)?;
 
@@ -396,7 +396,7 @@ fn test_mqtt_2_1_3_1(ctx: TestContext) -> Pin<Box<dyn Future<Output = Result<(),
             .map_err(|e| ConformanceError::Connection(e.to_string()))?;
 
         let client_id = format!("test213_1v5{}", &uuid::Uuid::new_v4().to_string()[..8]);
-        let connect_packet = build_connect_packet_v5(&client_id, 30);
+        let connect_packet = build_connect_packet_v5(&client_id, 30, ctx.username.as_deref(), ctx.password.as_deref());
         stream.write_all(&connect_packet).await
             .map_err(ConformanceError::Io)?;
 
@@ -453,7 +453,7 @@ fn test_mqtt_2_2_2_1(ctx: TestContext) -> Pin<Box<dyn Future<Output = Result<(),
 
         // Send CONNECT with Property Length = 0 (correct for no properties)
         let client_id = format!("test222_1v5{}", &uuid::Uuid::new_v4().to_string()[..8]);
-        let connect_packet = build_connect_packet_v5(&client_id, 30);
+        let connect_packet = build_connect_packet_v5(&client_id, 30, ctx.username.as_deref(), ctx.password.as_deref());
         stream.write_all(&connect_packet).await
             .map_err(ConformanceError::Io)?;
 
@@ -484,21 +484,46 @@ fn test_mqtt_2_2_2_1(ctx: TestContext) -> Pin<Box<dyn Future<Output = Result<(),
     })
 }
 
-fn build_connect_packet_v5(client_id: &str, keep_alive: u16) -> Vec<u8> {
+fn build_connect_packet_v5(client_id: &str, keep_alive: u16, username: Option<&str>, password: Option<&str>) -> Vec<u8> {
     let client_id_bytes = client_id.as_bytes();
+
+    // Calculate connect flags
+    let mut flags = 0x02; // Clean Start
+    if username.is_some() {
+        flags |= 0x80; // Set username flag (bit 7)
+    }
+    if password.is_some() {
+        flags |= 0x40; // Set password flag (bit 6)
+    }
 
     let mut var_header_payload = Vec::new();
     var_header_payload.push(0x00);
     var_header_payload.push(0x04);
     var_header_payload.extend_from_slice(b"MQTT");
     var_header_payload.push(5);
-    var_header_payload.push(0x02);
+    var_header_payload.push(flags);
     var_header_payload.push((keep_alive >> 8) as u8);
     var_header_payload.push((keep_alive & 0xFF) as u8);
     var_header_payload.push(0x00); // Properties length = 0
     var_header_payload.push((client_id_bytes.len() >> 8) as u8);
     var_header_payload.push((client_id_bytes.len() & 0xFF) as u8);
     var_header_payload.extend_from_slice(client_id_bytes);
+
+    // Add username if present
+    if let Some(user) = username {
+        let user_bytes = user.as_bytes();
+        var_header_payload.push((user_bytes.len() >> 8) as u8);
+        var_header_payload.push((user_bytes.len() & 0xFF) as u8);
+        var_header_payload.extend_from_slice(user_bytes);
+    }
+
+    // Add password if present
+    if let Some(pass) = password {
+        let pass_bytes = pass.as_bytes();
+        var_header_payload.push((pass_bytes.len() >> 8) as u8);
+        var_header_payload.push((pass_bytes.len() & 0xFF) as u8);
+        var_header_payload.extend_from_slice(pass_bytes);
+    }
 
     let mut packet = Vec::new();
     packet.push(0x10);

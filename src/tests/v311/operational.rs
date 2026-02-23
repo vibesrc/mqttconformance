@@ -146,6 +146,9 @@ fn test_mqtt_4_4_0_1(ctx: TestContext) -> Pin<Box<dyn Future<Output = Result<(),
         // First, set up subscriber to ensure message is stored
         let mut sub_opts = MqttOptions::new(&client_id, &ctx.host, ctx.port);
         sub_opts.set_keep_alive(Duration::from_secs(30));
+        if let Some(ref username) = ctx.username {
+            sub_opts.set_credentials(username, ctx.password.as_deref().unwrap_or(""));
+        }
         sub_opts.set_clean_session(false); // Persistent session
 
         let (sub_client, mut sub_eventloop) = AsyncClient::new(sub_opts, 10);
@@ -186,6 +189,9 @@ fn test_mqtt_4_4_0_1(ctx: TestContext) -> Pin<Box<dyn Future<Output = Result<(),
                 ctx.port,
             );
             pub_opts.set_keep_alive(Duration::from_secs(30));
+        if let Some(ref username) = ctx.username {
+            pub_opts.set_credentials(username, ctx.password.as_deref().unwrap_or(""));
+        }
             pub_opts.set_clean_session(true);
 
             let (pub_client, mut pub_eventloop) = AsyncClient::new(pub_opts, 10);
@@ -219,6 +225,9 @@ fn test_mqtt_4_4_0_1(ctx: TestContext) -> Pin<Box<dyn Future<Output = Result<(),
         // Reconnect subscriber with CleanSession=0 - should receive stored message
         let mut sub_opts2 = MqttOptions::new(&client_id, &ctx.host, ctx.port);
         sub_opts2.set_keep_alive(Duration::from_secs(30));
+        if let Some(ref username) = ctx.username {
+            sub_opts2.set_credentials(username, ctx.password.as_deref().unwrap_or(""));
+        }
         sub_opts2.set_clean_session(false);
 
         let (sub_client2, mut sub_eventloop2) = AsyncClient::new(sub_opts2, 10);
@@ -293,6 +302,9 @@ fn test_mqtt_4_6_0_2(ctx: TestContext) -> Pin<Box<dyn Future<Output = Result<(),
             ctx.port,
         );
         opts.set_keep_alive(Duration::from_secs(30));
+        if let Some(ref username) = ctx.username {
+            opts.set_credentials(username, ctx.password.as_deref().unwrap_or(""));
+        }
         opts.set_clean_session(true);
 
         let (client, mut eventloop) = AsyncClient::new(opts, 10);
@@ -368,6 +380,9 @@ fn test_mqtt_4_6_0_5(ctx: TestContext) -> Pin<Box<dyn Future<Output = Result<(),
             ctx.port,
         );
         opts.set_keep_alive(Duration::from_secs(30));
+        if let Some(ref username) = ctx.username {
+            opts.set_credentials(username, ctx.password.as_deref().unwrap_or(""));
+        }
         opts.set_clean_session(true);
 
         let (client, mut eventloop) = AsyncClient::new(opts, 10);
@@ -490,6 +505,9 @@ fn test_mqtt_2_3_1_1(ctx: TestContext) -> Pin<Box<dyn Future<Output = Result<(),
             ctx.port,
         );
         opts.set_keep_alive(Duration::from_secs(30));
+        if let Some(ref username) = ctx.username {
+            opts.set_credentials(username, ctx.password.as_deref().unwrap_or(""));
+        }
         opts.set_clean_session(true);
 
         let (client, mut eventloop) = AsyncClient::new(opts, 10);
@@ -540,6 +558,9 @@ fn test_mqtt_2_3_1_5(ctx: TestContext) -> Pin<Box<dyn Future<Output = Result<(),
             ctx.port,
         );
         opts.set_keep_alive(Duration::from_secs(30));
+        if let Some(ref username) = ctx.username {
+            opts.set_credentials(username, ctx.password.as_deref().unwrap_or(""));
+        }
         opts.set_clean_session(true);
 
         let (client, mut eventloop) = AsyncClient::new(opts, 10);
@@ -693,6 +714,9 @@ fn test_mqtt_4_5_0_1(ctx: TestContext) -> Pin<Box<dyn Future<Output = Result<(),
                 ctx.port,
             );
             opts.set_keep_alive(Duration::from_secs(30));
+        if let Some(ref username) = ctx.username {
+            opts.set_credentials(username, ctx.password.as_deref().unwrap_or(""));
+        }
             opts.set_clean_session(true);
 
             let (client, mut eventloop) = AsyncClient::new(opts, 10);
@@ -726,6 +750,9 @@ fn test_mqtt_4_5_0_1(ctx: TestContext) -> Pin<Box<dyn Future<Output = Result<(),
         // Reconnect with same client_id - should get stored message
         let mut opts = MqttOptions::new(&client_id, &ctx.host, ctx.port);
         opts.set_keep_alive(Duration::from_secs(30));
+        if let Some(ref username) = ctx.username {
+            opts.set_credentials(username, ctx.password.as_deref().unwrap_or(""));
+        }
         opts.set_clean_session(false);
 
         let (client, mut eventloop) = AsyncClient::new(opts, 10);
@@ -805,6 +832,9 @@ fn test_mqtt_4_6_0_1(ctx: TestContext) -> Pin<Box<dyn Future<Output = Result<(),
         // First, establish session and subscribe
         let mut opts = MqttOptions::new(&client_id, &ctx.host, ctx.port);
         opts.set_keep_alive(Duration::from_secs(30));
+        if let Some(ref username) = ctx.username {
+            opts.set_credentials(username, ctx.password.as_deref().unwrap_or(""));
+        }
         opts.set_clean_session(false);
 
         let (client, mut eventloop) = AsyncClient::new(opts, 10);
@@ -844,6 +874,9 @@ fn test_mqtt_4_6_0_1(ctx: TestContext) -> Pin<Box<dyn Future<Output = Result<(),
                 ctx.port,
             );
             pub_opts.set_keep_alive(Duration::from_secs(30));
+        if let Some(ref username) = ctx.username {
+            pub_opts.set_credentials(username, ctx.password.as_deref().unwrap_or(""));
+        }
             pub_opts.set_clean_session(true);
 
             let (pub_client, mut pub_eventloop) = AsyncClient::new(pub_opts, 10);
@@ -877,6 +910,9 @@ fn test_mqtt_4_6_0_1(ctx: TestContext) -> Pin<Box<dyn Future<Output = Result<(),
         // Reconnect and check for message
         let mut opts2 = MqttOptions::new(&client_id, &ctx.host, ctx.port);
         opts2.set_keep_alive(Duration::from_secs(30));
+        if let Some(ref username) = ctx.username {
+            opts2.set_credentials(username, ctx.password.as_deref().unwrap_or(""));
+        }
         opts2.set_clean_session(false);
 
         let (client2, mut eventloop2) = AsyncClient::new(opts2, 10);
@@ -1018,6 +1054,9 @@ fn test_mqtt_4_6_0_4(ctx: TestContext) -> Pin<Box<dyn Future<Output = Result<(),
             ctx.port,
         );
         opts.set_keep_alive(Duration::from_secs(30));
+        if let Some(ref username) = ctx.username {
+            opts.set_credentials(username, ctx.password.as_deref().unwrap_or(""));
+        }
         opts.set_clean_session(true);
 
         let (client, mut eventloop) = AsyncClient::new(opts, 10);
@@ -1098,6 +1137,9 @@ fn test_mqtt_4_6_0_6(ctx: TestContext) -> Pin<Box<dyn Future<Output = Result<(),
             ctx.port,
         );
         opts.set_keep_alive(Duration::from_secs(30));
+        if let Some(ref username) = ctx.username {
+            opts.set_credentials(username, ctx.password.as_deref().unwrap_or(""));
+        }
         opts.set_clean_session(true);
 
         let (client, mut eventloop) = AsyncClient::new(opts, 10);
@@ -1222,6 +1264,9 @@ fn test_mqtt_4_3_1_1(ctx: TestContext) -> Pin<Box<dyn Future<Output = Result<(),
             ctx.port,
         );
         opts.set_keep_alive(Duration::from_secs(30));
+        if let Some(ref username) = ctx.username {
+            opts.set_credentials(username, ctx.password.as_deref().unwrap_or(""));
+        }
         opts.set_clean_session(true);
 
         let (client, mut eventloop) = AsyncClient::new(opts, 10);
@@ -1299,6 +1344,9 @@ fn test_mqtt_4_3_2_1(ctx: TestContext) -> Pin<Box<dyn Future<Output = Result<(),
             ctx.port,
         );
         opts.set_keep_alive(Duration::from_secs(30));
+        if let Some(ref username) = ctx.username {
+            opts.set_credentials(username, ctx.password.as_deref().unwrap_or(""));
+        }
         opts.set_clean_session(true);
 
         let (client, mut eventloop) = AsyncClient::new(opts, 10);
@@ -1439,6 +1487,9 @@ fn test_mqtt_4_3_3_1(ctx: TestContext) -> Pin<Box<dyn Future<Output = Result<(),
             ctx.port,
         );
         opts.set_keep_alive(Duration::from_secs(30));
+        if let Some(ref username) = ctx.username {
+            opts.set_credentials(username, ctx.password.as_deref().unwrap_or(""));
+        }
         opts.set_clean_session(true);
 
         let (client, mut eventloop) = AsyncClient::new(opts, 10);

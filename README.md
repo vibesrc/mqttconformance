@@ -78,7 +78,7 @@ Tests cover: CONNECT, CONNACK, PUBLISH, PUBACK, PUBREC, PUBREL, PUBCOMP, SUBSCRI
 Start a test broker with Docker:
 
 ```bash
-docker compose up -d
+docker compose -f ./test/docker-compose-mosquitto.yml up -d
 ```
 
 This runs Mosquitto on `localhost:1883` with anonymous connections enabled.
